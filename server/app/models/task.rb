@@ -1,4 +1,5 @@
 class Task < ApplicationRecord
+    # Define the status options for the task
     STATUS_OPTIONS = %w[scheduled in_progress pending on_hold completed].freeze
 
     has_many :taggings
