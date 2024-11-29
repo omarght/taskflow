@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
   const [showMobile, setShowMobile] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
     setShowMobile(false);
+    navigate("/login");
   }
 
   const showMobileMenu = () => {

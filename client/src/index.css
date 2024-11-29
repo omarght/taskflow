@@ -1,3 +1,12 @@
+:root {
+  --blue: #007BFF;
+  --light-blue: #5AC8FA;
+  --dark-blue: #0056B3;
+  --white: #FFFFFF;
+  --light-gray: #F8F9FA;
+  --dark-gray: #343A40;
+}
+
 * {
   box-shadow: border-box;
   margin: 0;
@@ -13,12 +22,36 @@ header {
   z-index: 1000; /* Ensure header stays on top */
 }
 
+.sidebar {
+  position: relative; /* Establish stacking context */
+  z-index: 1000; /* Ensure header stays on top */
+  display: flex;
+  align-items: center;
+  background-color: var(--dark-blue);
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  padding-right: 1rem;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem;
+}
+
 .logo {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  margin-right: 10px;
-  margin-right: 3rem;
+  margin-left: 1rem;
+}
+
+.sidebar-title {
+  font-weight: bold;
+  color: white;
 }
 
 .menu-btn {
@@ -56,11 +89,15 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #333;
+  background-color: var(--dark-blue);
   color: white;
-  padding: 10px 20px;
   position: relative; /* Stacking context */
   z-index: 999; /* Ensure nav is below header */
+}
+
+.sidebar nav {
+  flex-direction: column;
+  width: 100%;
 }
 
 .left-nav {
@@ -69,21 +106,34 @@ nav {
   flex-grow: 1;
 }
 
+.sidebar .left-nav {
+  flex-direction: column;
+  width: 100%;
+}
+
+.sidebar .right-nav {
+  flex-direction: column;
+  width: 100%;
+}
+
 .right-nav {
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 nav .nav-item {
+  text-align: center;
+  width: 100%;
   padding: 1rem;
-  border-radius: 5px;
   list-style: none;
   text-decoration: none;
   color: white;
 }
 
 nav .nav-item:hover {
-  background-color: #555;
+  background-color: var(--light-gray);
+  color: var(--dark-blue);
   cursor: pointer;
 }
 
@@ -94,8 +144,19 @@ nav .nav-item:hover {
     min-height: 10vh;
   }
 
+  .sidebar {
+    height: 10vh;
+  }
+
   .logo {
     /* Keep logo inside header */
+  }
+
+  .sidebar-title {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    top: 50%;
   }
 
   .menu-btn {
@@ -133,4 +194,20 @@ nav .nav-item:hover {
     margin-top: 1rem;
     border-top: 1px solid #555;
   }
+}
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.light-gray-bg {
+  background-color: var(--light-gray);
+}
+
+.white-bg {
+  background-color: var(--white);
 }
