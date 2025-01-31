@@ -34,7 +34,7 @@ class Api::AuthController < ApplicationController
     if @current_user.nil?
         render json: { error: 'Unauthorized access - no token' }, status: :unauthorized
     else
-        render json: { message: 'Authorized access' }, status: :ok
+        render json: { message: 'Authorized access', user: @current_user }, status: :ok
     end
 end
 
