@@ -1,38 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
-import { useNavigate } from 'react-router-dom';
 import PriorityGridCell from '../misc/PriorityGridCell';
 import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import TaskModal from '../misc/TaskModal';
-import { getCurrentUserTasks, deleteTask } from '../services/TaskServices';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete'; 
+import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { Link, useNavigate } from 'react-router-dom';
+import { getAllTeams, deleteTeam } from '../services/TeamServices';
+import TeamModal from '../misc/TeamModal';
 import MiscForm from '../misc/MiscForm';
-import TasksTable from './TaskTable';
 
-const MyTasks: React.FC = () => {
+interface TeamsProps {
+}
+
+const Teams: React.FC<TeamsProps> = ({}) => {
     const columns: GridColDef[] = [
-        { field: 'title', headerName: 'Title', width: 150 },
-        { field: 'description', headerName: 'Description', width: 250 },
-        { 
-            field: 'status',
-            headerName: 'Status',
-            width: 150,
-            renderCell: (params) => PriorityGridCell({ priority: params.row.status, outlined: true }),
-        },
         {
-            field: 'importance',
-            headerName: 'Priority',
-            width: 100,
-            renderCell: (params) => <PriorityGridCell priority={params.row.importance} />,
+            field: 'name',
+            headerName: 'Name',
+            width: 150,
+            renderCell: (params) => (
+                <Link to={`/team/${params.row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {params.value}
+                </Link>
+            ),
         },
-        { field: 'start_date', headerName: 'Start Date', width: 125 },
-        { field: 'due_date', headerName: 'Due Date', width: 125 },
-        { field: 'categoryTitle', headerName: 'Category', width: 100 },
-        { field: 'projectTitle', headerName: 'Project', width: 100 },
+        { field: 'manager', headerName: 'Manager', width: 200 },
+        { field: 'user_count', headerName: 'Members Count', width: 150 },
+        { field: 'task_count', headerName: 'Tasks', width: 100 },
+        { field: 'project_count', headerName: 'Projects', width: 100 },
+        { field: 'created_at', headerName: 'Created', width: 125 },
         // { field: 'tags', headerName: 'Tags', width: 200 },
         {
             field: 'actions',
@@ -72,12 +71,12 @@ const MyTasks: React.FC = () => {
         due_date: new Date(task.due_date).toLocaleString(),
     });
 
-    const fetchTasks = async () => {
+    const fetchTeams = async () => {
         setLoading(true);
         setError(null);
-        const { data, error } = await getCurrentUserTasks();
 
-        if (error?.status === 401) {
+        const { teams, error, status } = await getAllTeams();
+        if (status === 401) {
             navigate('/login');
             return;
         }
@@ -86,32 +85,39 @@ const MyTasks: React.FC = () => {
             setLoading(false);
             return;
         }
-        setRows(data.map(mapTaskData));
+
+        const teamsWithManagerName = teams.map((team: any) => {
+            return {
+                ...team,
+                manager: team.manager?.name || 'No Manager',
+            }
+        })
+        setRows(teamsWithManagerName);
         setLoading(false);
     };
 
     useEffect(() => {
-        fetchTasks();
+        fetchTeams();
     }, [navigate]);
 
     const handleDeleteClick = async (id:string) => {
         setLoading(true); // Start loading
         try {
-            const res = await deleteTask(id);
+            const res = await deleteTeam(id);
             if(res.status === 200) {
                 setRows((prevRows) => prevRows.filter((row) => row.id !== id));
             } else {
                 console.log('error', res)
             }
         } catch (error) {
-            console.error(error);
+            console.log('error', error)
         } finally {
             setMiscOpen(false);
             setLoading(false); // Stop loading
         }
     }
 
-    const handleOpenSelectedTask = (params: any, modeType: "view" | "edit" | "create") => {
+    const handleOpenSelectedTeam = (params: any, modeType: "view" | "edit" | "create") => {
         setMode({ mode: `${modeType}`, id: params.row.id });
         setOpen(true);
     };
@@ -127,26 +133,29 @@ const MyTasks: React.FC = () => {
             
             <Grid size={11.5}>
                 <Box sx={{ marginBottom: 1, display: 'flex', gap: 1 }}>
-                    <Button variant="outlined" color="primary" onClick={() => setOpen(true)}>
-                        New Personal Task
+                    <Button variant="outlined" color="primary" onClick={() => { setMode({ mode: `create`, id: 0 }); setOpen(true) }}>
+                        New Team
                     </Button>
                     { selectedRow && 
-                        <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTask(selectedRow, 'view')}>
+                        <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTeam(selectedRow, 'view')}>
                             <VisibilityIcon /> View
                         </Button>
                     }
                 </Box>
-                <TasksTable
-                    rows={rows}
-                    columns={columns}
-                    onRowClick={(params: any) => setSelectedRow(params)}
-                    onRowDoubleClick={() => handleOpenSelectedTask(selectedRow, 'view')}
-                />
+                <DataGrid
+                    onRowClick={(params) => setSelectedRow(params)} // Handle row click event
+                    onRowDoubleClick={() => handleOpenSelectedTeam(selectedRow, 'view')} // Handle double-click event
+                    autosizeOptions={{
+                        columns: ['title', 'description'],
+                        includeOutliers: true,  
+                        includeHeaders: false,
+                    }}                
+                 rows={rows} columns={columns}/>
             </Grid>
-            <TaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} />
+            <TeamModal open={open} handleClose={handleClose} updateTeams={fetchTeams} mode={mode} />
             <MiscForm open={miscOpen} onClose={handleMiscClose} message="Are you sure you want to delete this team?" type="confirmation" onConfirm={() => handleDeleteClick(selectedRow.id)} />
         </Grid>
     );
 };
 
-export default MyTasks;
+export default Teams;

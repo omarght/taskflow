@@ -20,9 +20,9 @@ const PriorityGridCell: React.FC<PriorityGridCellProps> = ({ priority, outlined,
                     return colors?.[1] || defaultColors[1];
                 case 'completed':
                     return colors?.[2] || defaultColors[2];
-                case 'in-progress':
+                case 'in_progress':
                     return colors?.[3] || defaultColors[3];
-                case 'on-hold':
+                case 'on_hold':
                     return colors?.[4] || defaultColors[4];
             }
         }
@@ -39,9 +39,9 @@ const PriorityGridCell: React.FC<PriorityGridCellProps> = ({ priority, outlined,
                     return 'Pending';
                 case 'completed':
                     return 'Completed';
-                case 'in-progress':
+                case 'in_progress':
                     return 'In Progress';
-                case 'on-hold':
+                case 'on_hold':
                     return 'On Hold';
             }
         }

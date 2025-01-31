@@ -1,19 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PriorityGridCell from '../misc/PriorityGridCell';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid2'; // Import Grid2 from Material UI
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TaskModal from '../misc/TaskModal';
-import { getCurrentUserTasks, deleteTask } from '../services/TaskServices';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete'; 
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import MiscForm from '../misc/MiscForm';
-import TasksTable from './TaskTable';
+import { getTeamTasks } from '../services/TeamServices'; // Import getTeamTasks from TeamServices
+import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
+import TaskModal from './TaskModal'; // Import TaskModal component
+import MiscForm from './MiscForm'; // Import MiscForm component
+import Button from '@mui/material/Button'; // Import Button from Material UI
+import VisibilityIcon from '@mui/icons-material/Visibility'; // Import VisibilityIcon from Material UI
+import EditIcon from '@mui/icons-material/Edit'; // Import EditIcon from Material UI
+import DeleteIcon from '@mui/icons-material/Delete'; // Import DeleteIcon from Material UI
+import PriorityGridCell from './PriorityGridCell'; // Import PriorityGridCell component
+import TasksTable from '../pages/TaskTable';
+import { Task } from '@mui/icons-material';
+import { deleteTask } from '../services/TaskServices';
 
-const MyTasks: React.FC = () => {
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'Pending' | 'In Progress' | 'Completed';
+}
+
+interface TeamTasksProps {
+  teamId: string;
+}
+
+const TeamTasks: React.FC<TeamTasksProps> = ({ teamId }) => {
     const columns: GridColDef[] = [
         { field: 'title', headerName: 'Title', width: 150 },
         { field: 'description', headerName: 'Description', width: 250 },
@@ -58,16 +76,22 @@ const MyTasks: React.FC = () => {
     const [miscOpen, setMiscOpen] = useState(false);
     const [mode, setMode] = useState({ mode: "create" as "view" | "edit" | "create", id: 0 });
     const [selectedRow, setSelectedRow] = useState<any | null>(null);
+
     const navigate = useNavigate();
 
     const handleClose = () => setOpen(false);
     const handleMiscClose = () => setMiscOpen(false);
 
+    const handleOpenSelectedTask = (params: any, modeType: "view" | "edit" | "create") => {
+        setMode({ mode: `${modeType}`, id: params.row.id });
+        setOpen(true);
+    };
+
     const mapTaskData = (task: any) => ({
         ...task,
         categoryTitle: task.category?.title || 'No Category',
         projectTitle: task.project?.title || 'Personal',
-        tags: task.tags.map((tag: any) => tag.title).join(', '),
+        tags: task.tags?.map((tag: any) => tag.title).join(', '),
         start_date: new Date(task.start_date).toLocaleString(),
         due_date: new Date(task.due_date).toLocaleString(),
     });
@@ -75,9 +99,9 @@ const MyTasks: React.FC = () => {
     const fetchTasks = async () => {
         setLoading(true);
         setError(null);
-        const { data, error } = await getCurrentUserTasks();
+        const { tasks, error, status } = await getTeamTasks(teamId);
 
-        if (error?.status === 401) {
+        if (status === 401) {
             navigate('/login');
             return;
         }
@@ -86,13 +110,9 @@ const MyTasks: React.FC = () => {
             setLoading(false);
             return;
         }
-        setRows(data.map(mapTaskData));
+        setRows(tasks.map(mapTaskData));
         setLoading(false);
     };
-
-    useEffect(() => {
-        fetchTasks();
-    }, [navigate]);
 
     const handleDeleteClick = async (id:string) => {
         setLoading(true); // Start loading
@@ -111,25 +131,15 @@ const MyTasks: React.FC = () => {
         }
     }
 
-    const handleOpenSelectedTask = (params: any, modeType: "view" | "edit" | "create") => {
-        setMode({ mode: `${modeType}`, id: params.row.id });
-        setOpen(true);
-    };
+    useEffect(() => {
+        fetchTasks();
+    }, []);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-
-    return (
-        <Grid container spacing={1}>
-            <Grid size={12}>
-                <h1 className='section-title'>My Tasks</h1>
-            </Grid>
+  return (
+    <Grid container spacing={1}>
             
-            <Grid size={11.5}>
+            <Grid size={12}>
                 <Box sx={{ marginBottom: 1, display: 'flex', gap: 1 }}>
-                    <Button variant="outlined" color="primary" onClick={() => setOpen(true)}>
-                        New Personal Task
-                    </Button>
                     { selectedRow && 
                         <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTask(selectedRow, 'view')}>
                             <VisibilityIcon /> View
@@ -146,7 +156,7 @@ const MyTasks: React.FC = () => {
             <TaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} />
             <MiscForm open={miscOpen} onClose={handleMiscClose} message="Are you sure you want to delete this team?" type="confirmation" onConfirm={() => handleDeleteClick(selectedRow.id)} />
         </Grid>
-    );
+  );
 };
 
-export default MyTasks;
+export default TeamTasks;

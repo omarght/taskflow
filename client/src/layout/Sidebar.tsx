@@ -42,6 +42,9 @@ const Sidebar: React.FC = () => {
                         <Link className="nav-item left-nav-item" to="/my-tasks">
                             My Tasks
                         </Link>
+                        <Link className="nav-item left-nav-item" to="/teams">
+                            Teams
+                        </Link>
                     </>
                 )}
                 </ul>

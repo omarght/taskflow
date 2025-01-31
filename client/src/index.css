@@ -211,3 +211,9 @@ nav .nav-item:hover {
 .white-bg {
   background-color: var(--white);
 }
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 2rem 0;
+}

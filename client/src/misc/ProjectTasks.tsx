@@ -1,19 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
-import { useNavigate } from 'react-router-dom';
-import PriorityGridCell from '../misc/PriorityGridCell';
-import Grid from '@mui/material/Grid2';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TaskModal from '../misc/TaskModal';
-import { getCurrentUserTasks, deleteTask } from '../services/TaskServices';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { getProjectTasks } from '../services/ProjectServices';
+import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
+import { Box, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete'; 
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import MiscForm from '../misc/MiscForm';
-import TasksTable from './TaskTable';
+import DeleteIcon from '@mui/icons-material/Delete';
+import TasksTable from '../pages/TaskTable';
+import PriorityGridCell from './PriorityGridCell';
+import TaskModal from './TaskModal';
+import MiscForm from './MiscForm';
+import { deleteTask } from '../services/TaskServices';
 
-const MyTasks: React.FC = () => {
+interface Task {
+    id: number;
+    title: string;
+    status: string;
+    assigned_to?: { id: number; name: string };
+}
+
+interface ProjectTasksProps {
+    projectId: string;
+}
+
+const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId }) => {
     const columns: GridColDef[] = [
         { field: 'title', headerName: 'Title', width: 150 },
         { field: 'description', headerName: 'Description', width: 250 },
@@ -51,6 +60,15 @@ const MyTasks: React.FC = () => {
         }
     ]; 
 
+    const mapTaskData = (task: any) => ({
+        ...task,
+        categoryTitle: task.category?.title || 'No Category',
+        projectTitle: task.project?.title || 'Personal',
+        tags: task.tags?.map((tag: any) => tag.title).join(', '),
+        start_date: new Date(task.start_date).toLocaleString(),
+        due_date: new Date(task.due_date).toLocaleString(),
+    });
+
     const [rows, setRows] = useState<GridRowsProp>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -58,41 +76,29 @@ const MyTasks: React.FC = () => {
     const [miscOpen, setMiscOpen] = useState(false);
     const [mode, setMode] = useState({ mode: "create" as "view" | "edit" | "create", id: 0 });
     const [selectedRow, setSelectedRow] = useState<any | null>(null);
-    const navigate = useNavigate();
+
+    const { id } = useParams<{ id: string }>(); // Extract project ID from URL
 
     const handleClose = () => setOpen(false);
     const handleMiscClose = () => setMiscOpen(false);
 
-    const mapTaskData = (task: any) => ({
-        ...task,
-        categoryTitle: task.category?.title || 'No Category',
-        projectTitle: task.project?.title || 'Personal',
-        tags: task.tags.map((tag: any) => tag.title).join(', '),
-        start_date: new Date(task.start_date).toLocaleString(),
-        due_date: new Date(task.due_date).toLocaleString(),
-    });
-
     const fetchTasks = async () => {
         setLoading(true);
         setError(null);
-        const { data, error } = await getCurrentUserTasks();
-
-        if (error?.status === 401) {
-            navigate('/login');
-            return;
-        }
-        if (error) {
-            setError("Failed to fetch tasks. Please try again later.");
+        try {
+            const { tasks, error } = await getProjectTasks(id!);
+            console.log('tasks', tasks);
+            if (error) {
+                setError('Failed to load tasks.');
+            } else {
+                setRows(tasks.map(mapTaskData));
+            }
+        } catch {
+            setError('An unexpected error occurred.');
+        } finally {
             setLoading(false);
-            return;
         }
-        setRows(data.map(mapTaskData));
-        setLoading(false);
     };
-
-    useEffect(() => {
-        fetchTasks();
-    }, [navigate]);
 
     const handleDeleteClick = async (id:string) => {
         setLoading(true); // Start loading
@@ -111,42 +117,33 @@ const MyTasks: React.FC = () => {
         }
     }
 
+    useEffect(() => {
+        fetchTasks();
+    }, [id]);
+
     const handleOpenSelectedTask = (params: any, modeType: "view" | "edit" | "create") => {
         setMode({ mode: `${modeType}`, id: params.row.id });
         setOpen(true);
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
+    if (loading) return <Typography>Loading...</Typography>;
+    if (error) return <Typography color="error">{error}</Typography>;
 
     return (
-        <Grid container spacing={1}>
-            <Grid size={12}>
-                <h1 className='section-title'>My Tasks</h1>
-            </Grid>
-            
-            <Grid size={11.5}>
-                <Box sx={{ marginBottom: 1, display: 'flex', gap: 1 }}>
-                    <Button variant="outlined" color="primary" onClick={() => setOpen(true)}>
-                        New Personal Task
-                    </Button>
-                    { selectedRow && 
-                        <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTask(selectedRow, 'view')}>
-                            <VisibilityIcon /> View
-                        </Button>
-                    }
-                </Box>
-                <TasksTable
-                    rows={rows}
-                    columns={columns}
-                    onRowClick={(params: any) => setSelectedRow(params)}
-                    onRowDoubleClick={() => handleOpenSelectedTask(selectedRow, 'view')}
-                />
-            </Grid>
-            <TaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} />
-            <MiscForm open={miscOpen} onClose={handleMiscClose} message="Are you sure you want to delete this team?" type="confirmation" onConfirm={() => handleDeleteClick(selectedRow.id)} />
-        </Grid>
+        <Box sx={{ height: 400, width: '100%' }}>
+            <Typography variant="h6" gutterBottom>
+                Project Tasks
+            </Typography>
+            <TasksTable
+                rows={rows}
+                columns={columns}
+                onRowClick={(params: any) => setSelectedRow(params)}
+                onRowDoubleClick={() => handleOpenSelectedTask(selectedRow, 'view')}
+            />
+             <TaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} />
+             <MiscForm open={miscOpen} onClose={handleMiscClose} message="Are you sure you want to delete this team?" type="confirmation" onConfirm={() => handleDeleteClick(selectedRow.id)} />
+        </Box>
     );
 };
 
-export default MyTasks;
+export default ProjectTasks;
