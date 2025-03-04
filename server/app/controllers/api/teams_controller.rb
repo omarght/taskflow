@@ -105,6 +105,43 @@ class Api::TeamsController < ApplicationController
         team.destroy
         render json: { message: "Team deleted" }, status: :ok
     end
+
+    def get_team_members_with_task_counts
+        team = Team.find(params[:id])
+        # Get all project IDs for this team to filter tasks
+        team_project_ids = team.projects.pluck(:id)
+        
+        # Include the manager with regular team members
+        all_members = team.manager ? (team.users + [team.manager]).uniq : team.users
+        
+        members_with_task_counts = all_members.map do |member|
+          # Filter tasks to only those in this team's projects
+          member_tasks = member.tasks.where(project_id: team_project_ids)
+          open_tasks = member_tasks.where.not(status: 'completed').size
+          completed_tasks = member_tasks.where(status: 'completed').size
+          member.as_json.merge(
+            open_tasks: open_tasks,
+            completed_tasks: completed_tasks,
+            is_manager: member == team.manager
+          )
+        end
+      
+        render json: members_with_task_counts, status: :ok
+    end
+
+    def get_team_members
+        team = Team.find(params[:id])
+        # Include the manager with regular team members
+        all_members = team.manager ? (team.users + [team.manager]).uniq : team.users
+        render json: all_members, status: :ok
+    end
+
+    def get_all_members_by_project_id
+        project = Project.find(params[:id])
+        all_members = project.team.users
+        all_members = project.team.manager ? (project.team.users + [project.team.manager]).uniq : project.team.users
+        render json: all_members, status: :ok
+    end
     
     private
 

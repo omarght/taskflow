@@ -77,6 +77,10 @@ GEM
     debug (1.9.2)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    dotenv (3.1.7)
+    dotenv-rails (3.1.7)
+      dotenv (= 3.1.7)
+      railties (>= 6.1)
     erubi (1.13.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -165,6 +169,9 @@ GEM
       psych (>= 4.0.0)
     reline (0.5.11)
       io-console (~> 0.5)
+    ruby_http_client (3.5.5)
+    sendgrid-ruby (6.7.0)
+      ruby_http_client (~> 3.4)
     sqlite3 (1.7.3-aarch64-linux)
     sqlite3 (1.7.3-arm-linux)
     sqlite3 (1.7.3-arm64-darwin)
@@ -193,10 +200,13 @@ DEPENDENCIES
   bcrypt (~> 3.1.7)
   bootsnap
   debug
+  dotenv-rails
   jwt (~> 2.2)
+  mail
   puma (~> 5.0)
   rack-cors
   rails (~> 7.0.8, >= 7.0.8.6)
+  sendgrid-ruby
   sqlite3 (~> 1.4)
   tzinfo-data
 

@@ -30,12 +30,18 @@ class Api::TasksController < ApplicationController
     
       # Merge the resolved tag_ids into the task parameters
       task_params_with_tags = task_params.merge(tag_ids: tag_ids)
-    
+      
+      # Add the user_id to the task
+      unless params[:task][:member_id].nil?
+        task_params_with_tags = task_params_with_tags.merge({user_id: params[:task][:member_id]})
+      end
+      
       # Create the task
       task = Task.new(task_params_with_tags)
       if task.save
         render json: task, status: :created
       else
+        Rails.logger.error "Task creation failed: #{task.errors.full_messages}"
         render json: { error: task.errors.full_messages }, status: :unprocessable_entity
       end
     end

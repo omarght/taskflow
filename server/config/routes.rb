@@ -38,6 +38,22 @@ Rails.application.routes.draw do
     get '/project/:id', to: 'projects#show'
 
     get '/project-tasks/:id', to: 'projects#project_tasks'
+
+    post '/create-project', to: 'projects#create'
+
+    put '/update-project/:id', to: 'projects#update'
+
+    delete '/delete-project/:id', to: 'projects#destroy'
+
+    get '/get-team-projects/:id', to: 'projects#get_team_projects'
+
+    post '/create-user', to: 'users#create'
+
+    get '/team-members/:id', to: 'teams#get_team_members_with_task_counts'
+
+    get '/all-team-members/:id', to: 'teams#get_team_members'
+
+    get '/all-team-members-by-project/:id', to: 'teams#get_all_members_by_project_id'
   end
 
 end
