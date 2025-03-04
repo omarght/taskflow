@@ -15,7 +15,8 @@ import { getTeamProjects } from '../services/TeamServices'; // Import necessary 
 import MiscForm from './MiscForm'; // Import MiscForm component
 import { Fullscreen } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-
+import ProjectModal from './ProjectModal';
+import { deleteProject } from '../services/ProjectServices';
 interface Project {
   id: string;
   title: string;
@@ -62,7 +63,7 @@ const TeamProjects: React.FC<TeamProjectsProps> = ({ teamId }) => {
                     <Button onClick={() => handleEditProject(params.row.id)} variant="contained" color="success">
                         <EditIcon />
                     </Button>
-                    <Button onClick={() => handleDeleteProject(params.row.id)} variant="contained" color="error">
+                    <Button onClick={() => { setSelectedProjectId(params.row.id); setMiscOpen(true); }} variant="contained" color="error">
                         <DeleteIcon />
                     </Button>
                 </Box>
@@ -74,6 +75,9 @@ const TeamProjects: React.FC<TeamProjectsProps> = ({ teamId }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [miscOpen, setMiscOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false); // Project modal state
+    const [mode, setMode] = useState({ mode: 'create' as 'view' | 'edit' | 'create', id: 0 });
+
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
     const navigate = useNavigate();
@@ -104,38 +108,33 @@ const TeamProjects: React.FC<TeamProjectsProps> = ({ teamId }) => {
         setLoading(false);
     };
 
-    const handleViewProject = (id: string) => {
-        // Navigate to project detail page or open a modal
-        console.log(`View project with id: ${id}`);
+    const handleCreateButton = () => {
+        setMode({ mode: 'create', id: 0 });
+        setIsModalOpen(true);
     };
 
     const handleEditProject = (id: string) => {
-        // Navigate to project edit page or open a modal
-        console.log(`Edit project with id: ${id}`);
-    };
-
-    const handleDeleteProject = async (id: string) => {
-        setSelectedProjectId(id);
-        setMiscOpen(true);
+        setMode({ mode: 'edit', id: Number(id) });
+        setIsModalOpen(true);
     };
 
     const confirmDeleteProject = async () => {
-        // if (selectedProjectId) {
-        //     setLoading(true);
-        //     try {
-        //         const res = await deleteProject(selectedProjectId);
-        //         if (res.status === 200) {
-        //             setRows((prevRows) => prevRows.filter((row) => row.id !== selectedProjectId));
-        //         } else {
-        //             console.log('error', res);
-        //         }
-        //     } catch (error) {
-        //         console.error(error);
-        //     } finally {
-        //         setMiscOpen(false);
-        //         setLoading(false);
-        //     }
-        // }
+        setLoading(true);
+        if (selectedProjectId) {
+            try {
+                const res = await deleteProject(selectedProjectId);
+                if (res.status === 200) {
+                    setRows((prevRows) => prevRows.filter((row) => row.id !== selectedProjectId));
+                } else {
+                    console.log('error', res);
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+                setMiscOpen(false);
+            }
+        }
     };
 
     useEffect(() => {
@@ -149,8 +148,8 @@ const TeamProjects: React.FC<TeamProjectsProps> = ({ teamId }) => {
         <Grid width={'%100'} container spacing={1}>
             <Grid size={12}>
                 <Box sx={{ marginBottom: 1, display: 'flex', gap: 1 }}>
-                    <Button variant="contained" color="primary" onClick={() => handleViewProject('new')}>
-                        Add New Project
+                    <Button variant="outlined" color="primary" onClick={() =>  handleCreateButton()}>
+                        New Project
                     </Button>
                 </Box>
                 <DataGrid
@@ -166,6 +165,13 @@ const TeamProjects: React.FC<TeamProjectsProps> = ({ teamId }) => {
                 message="Are you sure you want to delete this project?" 
                 type="confirmation" 
                 onConfirm={confirmDeleteProject} 
+            />
+            <ProjectModal
+                open={isModalOpen}
+                handleClose={() => setIsModalOpen(false)}
+                updateProjects={fetchProjects}
+                mode={mode}
+                teamId={teamId}
             />
         </Grid>
     );

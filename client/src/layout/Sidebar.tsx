@@ -54,7 +54,9 @@ const Sidebar: React.FC = () => {
                         <Link className="nav-item right-nav-item" to="/login">
                             Login
                         </Link>
-                        <li className="nav-item right-nav-item">Signup</li>
+                        <Link className="nav-item right-nav-item" to="/signup">
+                            Signup
+                        </Link>
                     </>
                 ) : (
                     <li onClick={handleLogout} className="nav-item righ-nav-item">Logout</li>

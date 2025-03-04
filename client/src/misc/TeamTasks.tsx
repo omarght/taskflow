@@ -8,7 +8,7 @@ import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import { getTeamTasks } from '../services/TeamServices'; // Import getTeamTasks from TeamServices
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
-import TaskModal from './TaskModal'; // Import TaskModal component
+import TeamTaskModal from './TeamTaskModal'; // Import TeamTaskModal component
 import MiscForm from './MiscForm'; // Import MiscForm component
 import Button from '@mui/material/Button'; // Import Button from Material UI
 import VisibilityIcon from '@mui/icons-material/Visibility'; // Import VisibilityIcon from Material UI
@@ -139,7 +139,10 @@ const TeamTasks: React.FC<TeamTasksProps> = ({ teamId }) => {
     <Grid container spacing={1}>
             
             <Grid size={12}>
-                <Box sx={{ marginBottom: 1, display: 'flex', gap: 1 }}>
+                <Box sx={{ mb: 1, display: 'flex', gap: 1 }}>
+                    <Button variant="outlined" color="primary" onClick={() => setOpen(true)}>
+                        New Task
+                    </Button>
                     { selectedRow && 
                         <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTask(selectedRow, 'view')}>
                             <VisibilityIcon /> View
@@ -153,7 +156,7 @@ const TeamTasks: React.FC<TeamTasksProps> = ({ teamId }) => {
                     onRowDoubleClick={() => handleOpenSelectedTask(selectedRow, 'view')}
                 />
             </Grid>
-            <TaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} />
+            <TeamTaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} teamId={teamId} />
             <MiscForm open={miscOpen} onClose={handleMiscClose} message="Are you sure you want to delete this team?" type="confirmation" onConfirm={() => handleDeleteClick(selectedRow.id)} />
         </Grid>
   );

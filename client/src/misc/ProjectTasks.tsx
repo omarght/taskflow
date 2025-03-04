@@ -7,9 +7,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TasksTable from '../pages/TaskTable';
 import PriorityGridCell from './PriorityGridCell';
-import TaskModal from './TaskModal';
+import ProjectTaskModal from './ProjectTaskModal';
 import MiscForm from './MiscForm';
 import { deleteTask } from '../services/TaskServices';
+import VisibilityIcon from '@mui/icons-material/Visibility'; // Import VisibilityIcon from Material UI
 
 interface Task {
     id: number;
@@ -121,8 +122,8 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId }) => {
         fetchTasks();
     }, [id]);
 
-    const handleOpenSelectedTask = (params: any, modeType: "view" | "edit" | "create") => {
-        setMode({ mode: `${modeType}`, id: params.row.id });
+    const handleOpenSelectedTask = (modeType: "view" | "edit" | "create", id?: any) => {
+        setMode({ mode: `${modeType}`, id: id ?? null });
         setOpen(true);
     };
 
@@ -134,13 +135,23 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId }) => {
             <Typography variant="h6" gutterBottom>
                 Project Tasks
             </Typography>
+            <Box sx={{ mb: 1, display: 'flex', gap: 1 }}>
+                <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTask('create')}>
+                    New Task
+                </Button>
+                { selectedRow && 
+                    <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTask('view', selectedRow.row.id)}>
+                        <VisibilityIcon /> View
+                    </Button>
+                }
+            </Box>
             <TasksTable
                 rows={rows}
                 columns={columns}
                 onRowClick={(params: any) => setSelectedRow(params)}
-                onRowDoubleClick={() => handleOpenSelectedTask(selectedRow, 'view')}
+                onRowDoubleClick={() => handleOpenSelectedTask('view', selectedRow.row.id)}
             />
-             <TaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} />
+             <ProjectTaskModal open={open} handleClose={handleClose} updateTasks={fetchTasks} mode={mode} projectId={projectId} />
              <MiscForm open={miscOpen} onClose={handleMiscClose} message="Are you sure you want to delete this team?" type="confirmation" onConfirm={() => handleDeleteClick(selectedRow.id)} />
         </Box>
     );

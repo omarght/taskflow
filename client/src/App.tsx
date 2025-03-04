@@ -9,6 +9,7 @@ import './App.css'
 import axios from 'axios';
 import ProtectedRoute from './misc/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 import Grid from '@mui/material/Grid2';
 
 import Header from './layout/Header';
@@ -36,6 +37,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-tasks" element={<MyTasks />} />
             <Route path="/teams" element={<Teams />} />

@@ -10,6 +10,7 @@ import { getTeamById } from '../services/TeamServices';
 import MiscForm from '../misc/MiscForm';
 import TeamTasks from '../misc/TeamTasks';
 import TeamProjects from '../misc/TeamProjects';
+import TeamMembers from '../misc/TeamMembers';
 
 interface TeamPageProps {}
 
@@ -117,7 +118,11 @@ const TeamPage: React.FC<TeamPageProps> = () => {
             </TabPanel>
                 
             <TabPanel value={tab} index={1}>
-                Item Two
+                {id ? (    
+                    <TeamMembers teamId={id} />
+                ) : (
+                    <Typography variant="body1">Team ID is missing</Typography>
+                )}
             </TabPanel>
             <TabPanel value={tab} index={2}>
                 {id ? (

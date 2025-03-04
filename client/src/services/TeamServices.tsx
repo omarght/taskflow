@@ -73,3 +73,33 @@ export const getTeamProjects = async (id: string) => {
         return { data: null, error: { error } };
     }
 }
+
+export const getTeamMembers = async (id: string) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/team-members/${id}`);
+        return { members: response.data, error: null, status: response.status };
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+            return { data: null, error: { message: "Unauthorized" }, status: 401 };
+        }
+        return { data: null, error: { error } };
+    }
+}
+
+export const getAllTeamMembers = async (teamId: string) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/all-team-members/${teamId}`);
+        return { members: response.data, error: null, status: response.status };
+    } catch (error) {
+        return { data: null, error: { error } };
+    }
+}
+
+export const getAllTeamMembersByProject = async (projectId: string) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/all-team-members-by-project/${projectId}`);
+        return { members: response.data, error: null, status: response.status };
+    } catch (error) {
+        return { data: null, error: { error } };
+    }
+}

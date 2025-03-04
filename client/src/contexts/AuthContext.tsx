@@ -7,6 +7,7 @@ interface AuthContextType {
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -52,12 +53,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const signup = async (name: string, email: string, password: string) => {
+    try {
+      const response = await axios.post("http://localhost:3000/api/create-user", { user: { name, email, password } }, { withCredentials: true });
+      if (response.status === 201) {
+        setIsAuthenticated(true);
+        setLoggedInUser(response.data.user);
+        return response;
+      }
+    }
+    catch(error) {
+      console.error("Signup failed", error);
+    }
+  }
+
   useEffect(() => {
     checkAuth(); // Check auth on app load
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, checkAuth, logout, login, loggedInUser }}>
+    <AuthContext.Provider value={{ isAuthenticated, checkAuth, logout, login, loggedInUser, signup }}>
       {children}
     </AuthContext.Provider>
   );

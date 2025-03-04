@@ -39,9 +39,6 @@ const Teams: React.FC<TeamsProps> = ({}) => {
             width: 200,
             renderCell: (params) => (
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
-                    <Button onClick={() => { setMode({ mode: 'edit', id: params.row.id }); setOpen(true); }} variant="contained" color="success">
-                        <EditIcon  />
-                    </Button>
                     <Button onClick={() => { setMiscOpen(true) }} variant="contained" color="error">
                         <DeleteIcon />
                     </Button>

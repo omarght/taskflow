@@ -34,3 +34,39 @@ export const getProjectTasks = async (id: string) => {
         return { data: null, error: { error } };
     }
 }
+
+export const createProject = async (payload: any) => {
+    try {
+        const response = await axios.post(`${BASE_URL}/create-project`, payload);
+        return { data: response.data, error: null, status: response.status };
+    } catch (error) {
+        return { data: null, error: { error } };
+    }
+}
+
+export const updateProject = async (payload: any) => {
+    try {
+        const response = await axios.put(`${BASE_URL}/update-project/${payload.id}`, payload);
+        return { data: response.data, error: null, status: response.status };
+    } catch (error) {
+        return { data: null, error: { error } };
+    }
+}
+
+export const deleteProject = async (id: string) => {
+    try {
+        const response = await axios.delete(`${BASE_URL}/delete-project/${id}`);
+        return { data: response.data, error: null, status: response.status };
+    } catch (error) {
+        return { data: null, error: { error } };
+    }
+}
+
+export const getTeamProjects = async (teamId: string) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/get-team-projects/${teamId}`);
+        return { projects: response.data, error: null, status: response.status };
+    } catch (error) {
+        return { data: null, error: { error } };
+    }
+}
