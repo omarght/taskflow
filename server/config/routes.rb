@@ -23,7 +23,8 @@ Rails.application.routes.draw do
 
     get '/teams', to: 'teams#index'
 
-    get '/team/:id', to: 'teams#show'
+    get '/teams/:id', to: 'teams#show'
+    get '/teams/:id/projects', to: 'teams#show'
 
     post '/create-team', to: 'teams#create'
 
@@ -35,9 +36,9 @@ Rails.application.routes.draw do
 
     get '/team-projects/:id', to: 'teams#team_projects'
 
-    get '/project/:id', to: 'projects#show'
+    get 'teams/:team_id/projects/:id', to: 'projects#show'
 
-    get '/project-tasks/:id', to: 'projects#project_tasks'
+    get 'teams/:team_id/project-tasks/:id', to: 'projects#project_tasks'
 
     post '/create-project', to: 'projects#create'
 
@@ -54,6 +55,20 @@ Rails.application.routes.draw do
     get '/all-team-members/:id', to: 'teams#get_team_members'
 
     get '/all-team-members-by-project/:id', to: 'teams#get_all_members_by_project_id'
+
+    get '/non-team-members/:id', to: 'teams#non_members'
+
+    post '/add-team-member', to: 'teams#add_member'
+
+    delete '/remove-team-member', to: 'teams#remove_user'
+
+    post '/invite', to: 'users#invite'
+
+    post '/password_resets', to: 'password_resets#create'  # Request reset email
+    put '/password_resets/:token', to: 'password_resets#update'  # Change password
+
+    get '/user/:id', to: 'users#get_user'
+    get '/current-user', to: 'users#get_current_user'
   end
 
 end

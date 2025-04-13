@@ -37,6 +37,12 @@ class Api::TeamsController < ApplicationController
         team_with_projects_and_users = team_params.merge(project_ids: project_ids, user_ids: user_ids)
 
         team = Team.new(team_with_projects_and_users)
+        
+        if(team.manager_id)
+            manager = User.find(team.manager_id)
+            team.users << manager unless team.users.exists?(manager.id)
+        end
+
         if team.save
             render json: team.as_json(include: 
             { 
@@ -83,7 +89,8 @@ class Api::TeamsController < ApplicationController
         render json: tasks.map { |task| task.as_json(include:
             {
                 project: { only: [:id, :title] },
-                user: { only: [:id, :name] }
+                user: { only: [:id, :name] },
+                category: { only: [:id, :title] },
             })
         }, status: :ok
     end
@@ -141,8 +148,41 @@ class Api::TeamsController < ApplicationController
         all_members = project.team.users
         all_members = project.team.manager ? (project.team.users + [project.team.manager]).uniq : project.team.users
         render json: all_members, status: :ok
-    end
+    end 
+
+    def non_members
+        team = Team.find(params[:id])
+        @non_members = User.non_members(team.id).select(:id, :name, :email) # Ensure only id and name are returned
     
+        render json: @non_members, status: :ok
+    end
+
+    def add_member
+        team = Team.find_by(id: params[:team_id])
+        user = User.find_by(id: params[:user_id])
+      
+        if team.nil? || user.nil?
+          return render json: { error: 'Team or user not found' }, status: :not_found
+        end
+      
+        if team.users.exists?(user.id)
+          return render json: { error: 'User is already in the team' }, status: :unprocessable_entity
+        end
+      
+        team.users << user
+        UserMailer.added_to_team(user, team).deliver_later
+      
+        render json: team.users, status: :ok
+      end
+      
+
+    def remove_user
+        team = Team.find(params[:team_id])
+        user = User.find(params[:user_id])
+        team.users.delete(user)
+        render json: team.users, status: :ok
+    end
+
     private
 
     def team_params
