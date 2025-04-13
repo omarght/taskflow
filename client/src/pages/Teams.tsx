@@ -11,7 +11,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getAllTeams, deleteTeam } from '../services/TeamServices';
 import TeamModal from '../misc/TeamModal';
 import MiscForm from '../misc/MiscForm';
+import Breadcrumbs from '../misc/Breadcrumbs';
+import DeleteButton from '../misc/DeleteButton';
 
+const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
 interface TeamsProps {
 }
 
@@ -22,26 +25,23 @@ const Teams: React.FC<TeamsProps> = ({}) => {
             headerName: 'Name',
             width: 150,
             renderCell: (params) => (
-                <Link to={`/team/${params.row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to={`/teams/${params.row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     {params.value}
                 </Link>
             ),
         },
-        { field: 'manager', headerName: 'Manager', width: 200 },
-        { field: 'user_count', headerName: 'Members Count', width: 150 },
+        { field: 'manager', headerName: 'Manager', width: 100 },
+        { field: 'user_count', headerName: 'Members', width: 100 },
         { field: 'task_count', headerName: 'Tasks', width: 100 },
         { field: 'project_count', headerName: 'Projects', width: 100 },
-        { field: 'created_at', headerName: 'Created', width: 125 },
         // { field: 'tags', headerName: 'Tags', width: 200 },
         {
             field: 'actions',
             headerName: 'Actions',
-            width: 200,
+            width: 100,
             renderCell: (params) => (
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
-                    <Button onClick={() => { setMiscOpen(true) }} variant="contained" color="error">
-                        <DeleteIcon />
-                    </Button>
+                    <DeleteButton isMobile={isMobile} onClick={() => { setMiscOpen(true) }} />
                 </ Box>
             )
         }
@@ -59,14 +59,17 @@ const Teams: React.FC<TeamsProps> = ({}) => {
     const handleClose = () => setOpen(false);
     const handleMiscClose = () => setMiscOpen(false);
 
-    const mapTaskData = (task: any) => ({
-        ...task,
-        categoryTitle: task.category?.title || 'No Category',
-        projectTitle: task.project?.title || 'Personal',
-        tags: task.tags.map((tag: any) => tag.title).join(', '),
-        start_date: new Date(task.start_date).toLocaleString(),
-        due_date: new Date(task.due_date).toLocaleString(),
-    });
+    const getColumnVisibility = () => {
+        const width = window.innerWidth;
+        return {
+            description: width > 1000,
+            start_date: width > 800,
+            categoryTitle: width > 1100,
+            created_at: width > 1200,
+        };
+    };
+
+    const [columnVisibilityModel, setColumnVisibilityModel] = useState(getColumnVisibility());
 
     const fetchTeams = async () => {
         setLoading(true);
@@ -95,6 +98,9 @@ const Teams: React.FC<TeamsProps> = ({}) => {
 
     useEffect(() => {
         fetchTeams();
+        const handleResize = () => setColumnVisibilityModel(getColumnVisibility());
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, [navigate]);
 
     const handleDeleteClick = async (id:string) => {
@@ -123,35 +129,33 @@ const Teams: React.FC<TeamsProps> = ({}) => {
     if (error) return <div>{error}</div>;
 
     return (
-        <Grid container spacing={1}>
-            <Grid size={12}>
-                <h1 className='section-title'>My Tasks</h1>
-            </Grid>
-            
-            <Grid size={11.5}>
-                <Box sx={{ marginBottom: 1, display: 'flex', gap: 1 }}>
-                    <Button variant="outlined" color="primary" onClick={() => { setMode({ mode: `create`, id: 0 }); setOpen(true) }}>
-                        New Team
+        <Box sx={{ p: 2 }}>
+            <Breadcrumbs />
+            <Box sx={{ marginBottom: 1, display: 'flex', gap: 1 }}>
+                <Button variant="outlined" color="primary" onClick={() => { setMode({ mode: `create`, id: 0 }); setOpen(true) }}>
+                    New Team
+                </Button>
+                { selectedRow && 
+                    <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTeam(selectedRow, 'view')}>
+                        <VisibilityIcon /> View
                     </Button>
-                    { selectedRow && 
-                        <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTeam(selectedRow, 'view')}>
-                            <VisibilityIcon /> View
-                        </Button>
-                    }
-                </Box>
-                <DataGrid
-                    onRowClick={(params) => setSelectedRow(params)} // Handle row click event
-                    onRowDoubleClick={() => handleOpenSelectedTeam(selectedRow, 'view')} // Handle double-click event
-                    autosizeOptions={{
-                        columns: ['title', 'description'],
-                        includeOutliers: true,  
-                        includeHeaders: false,
-                    }}                
-                 rows={rows} columns={columns}/>
-            </Grid>
+                }
+            </Box>
+            <DataGrid
+                onRowClick={(params) => setSelectedRow(params)} // Handle row click event
+                onRowDoubleClick={() => handleOpenSelectedTeam(selectedRow, 'view')} // Handle double-click event
+                autosizeOptions={{
+                    columns: ['title', 'description'],
+                    includeOutliers: true,  
+                    includeHeaders: false,
+                }}
+                columnVisibilityModel={columnVisibilityModel}                
+                rows={rows} columns={columns}
+                sx={{ height: '100%', width: isMobile? '100%' : 'max-content', fontSize: '0.85rem' }}
+            />    
             <TeamModal open={open} handleClose={handleClose} updateTeams={fetchTeams} mode={mode} />
             <MiscForm open={miscOpen} onClose={handleMiscClose} message="Are you sure you want to delete this team?" type="confirmation" onConfirm={() => handleDeleteClick(selectedRow.id)} />
-        </Grid>
+        </Box>
     );
 };
 

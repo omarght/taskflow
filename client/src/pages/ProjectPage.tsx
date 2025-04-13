@@ -1,62 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
 import { getProjectById } from '../services/ProjectServices';
 import ProjectTasks from '../misc/ProjectTasks';
+import Breadcrumbs from '../misc/Breadcrumbs';
 
-interface ProjectPageProps {}
-
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-    const { id } = useParams<{ id: string }>();
-
-    const { children, value, index, ...other } = props;
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`tabpanel-${index}`}
-            aria-labelledby={`tab-${index}`}
-            {...other}
-        >
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-        </div>
-    );
-}
-
-const ProjectPage: React.FC<ProjectPageProps> = () => {
-    const { id } = useParams<{ id: string }>();
+const ProjectPage: React.FC = () => {
+    const { team_id, id } = useParams<{ team_id: string; id: string }>();
     const [project, setProject] = useState<any>(null);
-    const [tab, setTab] = useState(0);
+    const [tab, setTab] = useState(0); // Keeping this in case you use tabs later
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-        setTab(newValue);
-    };
-
     const fetchProject = async () => {
+        if (!team_id || !id) {
+            setError('Missing team or project ID.');
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         setError(null);
+
         try {
-            const { project, error } = await getProjectById(id!);
+            const { project, error } = await getProjectById(team_id, id);
             if (error) {
-                setError("Failed to fetch project details. Please try again.");
+                setError('Failed to fetch project details. Please try again.');
             } else {
                 setProject(project);
             }
-        } catch (e) {
-            setError("An unexpected error occurred.");
+        } catch {
+            setError('An unexpected error occurred.');
         } finally {
             setLoading(false);
         }
@@ -64,31 +38,23 @@ const ProjectPage: React.FC<ProjectPageProps> = () => {
 
     useEffect(() => {
         fetchProject();
-    }, [id]);
+    }, [team_id, id]);
 
-    if (!id) return <div>Project ID not found.</div>;
+    useEffect(() => {
+        if (project) {
+            console.log('project', project);
+        }
+    }, [project]);
+
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
+    if (!project) return <div>No project found.</div>;
 
     return (
-        <Grid container spacing={2}>
-            <Grid size={12}>
-                <Typography variant="h4">{project.title}</Typography>
-                <Typography variant="subtitle1">{project.description}</Typography>
-                <Typography variant="body2">Start: {project.start_date || 'N/A'} - End: {project.end_date || 'N/A'}</Typography>
-            </Grid>
-
-            <Grid size={12}>
-                <Tabs value={tab} onChange={handleTabChange}>
-                    <Tab label="Tasks" />
-                    <Tab label="Team" />
-                </Tabs>
-            </Grid>
-
-            <TabPanel value={tab} index={0}>
-                {id ? <ProjectTasks projectId={id} /> : <Typography variant="body1">Project ID is missing</Typography>}
-            </TabPanel>
-        </Grid>
+        <Box sx={{ width: '100%', p: 2 }}>
+            <Breadcrumbs />
+            <ProjectTasks teamId={team_id} projectId={id!} />
+        </Box>
     );
 };
 

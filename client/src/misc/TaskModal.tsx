@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { styled } from '@mui/system';
 import { Modal, Box, TextField, Button, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
@@ -6,6 +7,7 @@ import { SelectChangeEvent } from '@mui/material';
 import { getCategories, getProjects, createTask, getTaskById, updateTask } from '../services/TaskServices';
 import { useAuth } from '../contexts/AuthContext';
 import { CircularProgress } from '@mui/material';
+import { StyledModal, ModalContent, FormRow, DateTimeRow, TagsBox, ActionButton } from './ModalComponents';
 
 interface TaskModalProps {
     open: boolean;
@@ -52,10 +54,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
         start_date: false,
         due_date: false,
     });
-    const [loading, setLoading] = useState(false); // New loading state
+    const [loading, setLoading] = useState(false);
+
+    const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
 
     useEffect(() => {
-        console.log(task.project_id)
         if (open) {
             fetchCategroies();
             fetchProjects();
@@ -66,13 +69,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                         start_date: dayjs(res.data.start_date),
                         due_date: dayjs(res.data.due_date),
                     };
-                    console.log(taskWithConvertedDates);
                     setTask(taskWithConvertedDates);
                 });
             }
         }
-    }, [open]); // Only depend on `open`
-    
+    }, [open]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -93,7 +94,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
         } catch (error) {
             console.error(error);
         }
-    }
+    };
 
     const fetchProjects = async () => {
         try {
@@ -106,7 +107,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
         } catch (error) {
             console.error(error);
         }
-    }
+    };
 
     const handleSelectChange = (e: SelectChangeEvent<number | string>) => {
         const { name, value } = e.target;
@@ -119,30 +120,30 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
     const handleStartDateChange = (newDate: Dayjs | null) => {
         setTask((prev) => ({
             ...prev,
-            start_date: newDate || dayjs(), // Fallback to current date if null
+            start_date: newDate || dayjs(),
         }));
     };
 
     const handleDueDateChange = (newDate: Dayjs | null) => {
         setTask((prev) => ({
             ...prev,
-            due_date: newDate || dayjs(), // Fallback to current date if null
+            due_date: newDate || dayjs(),
         }));
     };
 
     const handleAddTags = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (value.endsWith(';')) {
-            const newTag = value.slice(0, -1).trim(); // Remove the `;` and trim spaces
+            const newTag = value.slice(0, -1).trim();
             if (newTag) {
                 setTask((prev) => ({
                     ...prev,
                     tags: [...prev.tags, newTag],
                 }));
             }
-            setCurrentTag(''); // Clear the text box
+            setCurrentTag('');
         } else {
-            setCurrentTag(value); // Update the text box value
+            setCurrentTag(value);
         }
     };
 
@@ -164,25 +165,21 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
         };
 
         setErrors(newErrors);
-
-        // If any error exists, the form is invalid
         return !Object.values(newErrors).some((error) => error);
-    };   
-    
+    };
 
     const handleSaveClick = async () => {
-        setLoading(true); // Start loading
-        try { 
+        setLoading(true);
+        try {
             const verification = await verifyInputs();
             if (!verification) {
                 return;
             }
-            if(task.project_id === 0) {
+            if (task.project_id === 0) {
                 task.user_id = loggedInUser.id;
-                const newTask = (({ project_id, ...rest}) => rest)(task);
-                console.log('newTask', newTask);
+                const newTask = (({ project_id, ...rest }) => rest)(task);
                 const res = await createTask(newTask);
-                if(res.status === 201) {
+                if (res.status === 201) {
                     handleClose();
                     updateTasks();
                 }
@@ -192,46 +189,32 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
         } catch (error) {
             console.error(error);
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
     const handleUpdateClick = async () => {
-        setLoading(true); // Start loading
+        setLoading(true);
         try {
             const verification = await verifyInputs();
             if (!verification) {
                 return;
             }
             const res = await updateTask(task);
-            if(res.status === 200) {
+            if (res.status === 200) {
                 handleClose();
                 updateTasks();
             }
         } catch (error) {
             console.error(error);
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
-    }
+    };
 
     return (
-        <Modal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: '5%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 700,
-                    bgcolor: 'background.paper',
-                    border: '2px solid #FFF',
-                    boxShadow: 24,
-                    p: 2,
-                    borderRadius: 1,
-                }}
-            >
-
+        <StyledModal open={open} onClose={handleClose}>
+            <ModalContent isMobile={isMobile}>
                 <TextField
                     error={errors.title}
                     fullWidth
@@ -256,7 +239,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                     onChange={handleInputChange}
                 />
 
-                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                <FormRow>
                     <FormControl fullWidth margin="normal">
                         <InputLabel id="status-select-label">Status</InputLabel>
                         <Select
@@ -306,9 +289,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                             onChange={handleSelectChange}
                             label="category"
                         >
-                            <MenuItem key={0} value={0}>
-                                
-                            </MenuItem>
+                            <MenuItem key={0} value={0}></MenuItem>
                             {categories.map((category) => (
                                 <MenuItem key={category.id} value={category.id}>
                                     {category.title}
@@ -316,11 +297,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                             ))}
                         </Select>
                     </FormControl>
-                </Box>
-                
-                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                </FormRow>
+
+                <DateTimeRow>
                     <DateTimePicker
-                        sx={{ width: '100%' }}
+                        sx={{ width: '100%', mb: 2 }}
                         value={task.start_date}
                         onChange={handleStartDateChange}
                         referenceDate={dayjs('2022-04-17T15:30')}
@@ -328,7 +309,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                     />
 
                     <DateTimePicker
-                        sx={{ width: '100%' }}
+                        sx={{ width: '100%', mb: 2 }}
                         value={task.due_date}
                         onChange={handleDueDateChange}
                         referenceDate={dayjs('2022-04-17T15:30')}
@@ -353,9 +334,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                             ))}
                         </Select>
                     </FormControl>
-                </Box>
+                </DateTimeRow>
 
-                {/* Tags Input */}
                 <TextField
                     fullWidth
                     label="Tags"
@@ -365,9 +345,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                     onChange={handleAddTags}
                     helperText="Type a tag and press ';' to add"
                 />
-                {/* Display Tags */}
-                { task.tags.length > 0 &&
-                    <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+
+                {task.tags.length > 0 && (
+                    <TagsBox>
                         {task.tags.map((tag, index) => (
                             <Chip
                                 key={index}
@@ -376,22 +356,22 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, handleClose, updateTasks, m
                                 sx={{ m: 0.5 }}
                             />
                         ))}
-                    </Box>
-                }
-                { mode.mode != "view" &&
-                    <Button
+                    </TagsBox>
+                )}
+
+                {mode.mode !== "view" && (
+                    <ActionButton
                         variant="contained"
                         color="primary"
                         fullWidth
                         onClick={mode.mode === 'edit' ? handleUpdateClick : handleSaveClick}
                         disabled={loading}
-                        sx={{ mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
-                    </Button>
-                }
-            </Box>
-        </Modal>
+                    </ActionButton>
+                )}
+            </ModalContent>
+        </StyledModal>
     );
 };
 

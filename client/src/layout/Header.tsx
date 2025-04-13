@@ -34,7 +34,7 @@ const Header: React.FC = () => {
                     Home
                 </Link>
                 <Link className="nav-item left-nav-item" to="/profile">
-                    Profile
+                  Profile
                 </Link>
                 <Link className="nav-item left-nav-item" to="/my-tasks">
                     My Tasks

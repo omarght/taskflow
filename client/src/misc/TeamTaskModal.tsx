@@ -8,6 +8,7 @@ import { getAllTeamMembers } from '../services/TeamServices';
 import { useAuth } from '../contexts/AuthContext';
 import { CircularProgress } from '@mui/material';
 import { getTeamProjects } from '../services/ProjectServices';
+import { StyledModal, ModalContent, FormRow, DateTimeRow, TagsBox, ActionButton } from './ModalComponents';
 
 interface TeamTaskModalProps {
   open: boolean;
@@ -27,6 +28,7 @@ type Errors = {
   importance: boolean;
   start_date: boolean;
   due_date: boolean;
+  project_id: boolean;
 };
 
 const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, updateTasks, mode, teamId }) => {
@@ -39,7 +41,7 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
     start_date: Dayjs;
     due_date: Dayjs;
     category_id: number;
-    project_id?: number | ''; // Make project_id optional with ?
+    project_id: number; // Make project_id optional with ?
     tags: string[];
   }>({
     title: '',
@@ -50,7 +52,7 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
     start_date: dayjs(),
     due_date: dayjs(),
     category_id: 0,
-    project_id: '', // Default to empty string
+    project_id: 0, // Default to empty string
     tags: [],
   });
   const [currentTag, setCurrentTag] = useState<string>('');
@@ -65,8 +67,10 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
     importance: false,
     start_date: false,
     due_date: false,
+    project_id: false,
   });
   const [loading, setLoading] = useState(false);
+  const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
 
   useEffect(() => {
     if (open) {
@@ -80,7 +84,7 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
         start_date: dayjs(),
         due_date: dayjs(),
         category_id: 0,
-        project_id: '',
+        project_id: 0,
         tags: [],
       });
       fetchCategories();
@@ -94,7 +98,7 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
             start_date: dayjs(res.data.start_date),
             due_date: dayjs(res.data.due_date),
             user_id: res.data.user_id || '', // Ensure user_id is never undefined
-            project_id: res.data.project_id || '', // Ensure project_id is never undefined
+            project_id: res.data.project_id,
           };
           setTask(taskWithConvertedDates);
         });
@@ -184,6 +188,7 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
       start_date: !task.start_date,
       due_date: !task.due_date,
       category: task.category_id === 0,
+      project_id: task.project_id === 0,
     };
     setErrors(newErrors);
     return !Object.values(newErrors).some((error) => error);
@@ -196,7 +201,7 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
       if (!verification) return;
 
       let taskToSave = { ...task };
-      if (task.project_id === '' || task.project_id === 0) delete taskToSave.project_id; // Now valid with optional type
+      // if (task.project_id === '' || task.project_id === 0) delete taskToSave.project_id; // Now valid with optional type
       if (task.user_id === '') taskToSave.user_id = loggedInUser.id; // Default to current user if not set
 
       const res = await createTask(taskToSave);
@@ -220,7 +225,7 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
       if (!verification) return;
 
       let taskToUpdate = { ...task };
-      if (task.project_id === '' || task.project_id === 0) delete taskToUpdate.project_id; // Now valid with optional type
+      //if (task.project_id === 0) delete taskToUpdate.project_id; // Now valid with optional type
 
       const res = await updateTask(taskToUpdate);
       if (res.status === 200) {
@@ -237,21 +242,8 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
   };
 
   return (
-    <Modal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '5%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 700,
-          bgcolor: 'background.paper',
-          border: '2px solid #FFF',
-          boxShadow: 24,
-          p: 2,
-          borderRadius: 1,
-        }}
-      >
+    <StyledModal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
+      <ModalContent isMobile={isMobile}>
         <TextField
           error={errors.title}
           fullWidth
@@ -274,91 +266,101 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
           value={task.description}
           onChange={handleInputChange}
         />
-        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+        
+        <FormRow>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="status-select-label">Status</InputLabel>
-            <Select
-              labelId="status-select-label"
-              name="status"
-              value={task.status}
-              onChange={handleSelectChange}
-              label="Status"
-            >
-              <MenuItem value="scheduled">Scheduled</MenuItem>
-              <MenuItem value="in_progress">In Progress</MenuItem>
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="on_hold">On Hold</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-            </Select>
+              <InputLabel id="status-select-label">Status</InputLabel>
+              <Select
+                  labelId="status-select-label"
+                  id="status-select"
+                  name="status"
+                  value={task.status}
+                  onChange={handleSelectChange}
+                  label="Status"
+              >
+                  <MenuItem value="scheduled">Scheduled</MenuItem>
+                  <MenuItem value="in_progress">In Progress</MenuItem>
+                  <MenuItem value="pending">Pending</MenuItem>
+                  <MenuItem value="on_hold">On Hold</MenuItem>
+                  <MenuItem value="completed">Completed</MenuItem>
+              </Select>
           </FormControl>
+
           <FormControl fullWidth margin="normal">
-            <InputLabel id="priority-select-label">Priority</InputLabel>
-            <Select
-              error={errors.importance}
-              labelId="priority-select-label"
-              name="importance"
-              value={task.importance}
-              onChange={handleSelectChange}
-              label="Priority"
-            >
-              <MenuItem value={0}></MenuItem>
-              <MenuItem value={1}>Urgent</MenuItem>
-              <MenuItem value={2}>High</MenuItem>
-              <MenuItem value={3}>Normal</MenuItem>
-              <MenuItem value={4}>Low</MenuItem>
-              <MenuItem value={5}>Long Term</MenuItem>
-            </Select>
+              <InputLabel id="priority-select-label">Priority</InputLabel>
+              <Select
+                  error={errors.importance}
+                  labelId="priority-select-label"
+                  id="priority-select"
+                  name="importance"
+                  value={task.importance}
+                  onChange={handleSelectChange}
+                  label="Priority"
+              >
+                  <MenuItem value="0"></MenuItem>
+                  <MenuItem value="1">Urgent</MenuItem>
+                  <MenuItem value="2">High</MenuItem>
+                  <MenuItem value="3">Normal</MenuItem>
+                  <MenuItem value="4">Low</MenuItem>
+                  <MenuItem value="5">Long Term</MenuItem>
+              </Select>
           </FormControl>
+
           <FormControl fullWidth margin="normal">
-            <InputLabel id="category-select-label">Category</InputLabel>
-            <Select
-              error={errors.category}
-              labelId="category-select-label"
-              name="category_id"
-              value={task.category_id}
-              onChange={handleSelectChange}
-              label="Category"
-            >
-              <MenuItem value={0}></MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  {category.title}
-                </MenuItem>
-              ))}
-            </Select>
+              <InputLabel id="category-select-label">Category</InputLabel>
+              <Select
+                  error={errors.category}
+                  labelId="category-select-label"
+                  id="category-select"
+                  name="category_id"
+                  value={task.category_id}
+                  onChange={handleSelectChange}
+                  label="category"
+              >
+                  <MenuItem key={0} value={0}></MenuItem>
+                  {categories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                          {category.title}
+                      </MenuItem>
+                  ))}
+              </Select>
           </FormControl>
-        </Box>
-        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+      </FormRow>
+        <DateTimeRow>
           <DateTimePicker
-            sx={{ width: '100%' }}
-            value={task.start_date}
-            onChange={handleStartDateChange}
-            label="Start Date"
+              sx={{ width: '100%', mb: 2 }}
+              value={task.start_date}
+              onChange={handleStartDateChange}
+              referenceDate={dayjs('2022-04-17T15:30')}
+              label="Start Date"
           />
+
           <DateTimePicker
-            sx={{ width: '100%' }}
-            value={task.due_date}
-            onChange={handleDueDateChange}
-            label="End Date"
+              sx={{ width: '100%', mb: 2 }}
+              value={task.due_date}
+              onChange={handleDueDateChange}
+              referenceDate={dayjs('2022-04-17T15:30')}
+              label="End Date"
           />
+
           <FormControl sx={{ width: '100%' }}>
-            <InputLabel id="project-select-label">Project</InputLabel>
-            <Select
-              labelId="project-select-label"
-              name="project_id"
-              value={task.project_id}
-              onChange={handleSelectChange}
-              label="Project"
-            >
-              <MenuItem value="">None</MenuItem>
-              {projects.map((project) => (
-                <MenuItem key={project.id} value={project.id}>
-                  {project.title}
-                </MenuItem>
-              ))}
-            </Select>
+              <InputLabel id="project-select-label">Project</InputLabel>
+              <Select
+                  labelId="project-select-label"
+                  id="project-select"
+                  name="project_id"
+                  value={task.project_id}
+                  onChange={handleSelectChange}
+                  label="Project"
+              >
+                  {projects.map((project) => (
+                      <MenuItem key={project.id} value={project.id}>
+                          {project.title}
+                      </MenuItem>
+                  ))}
+              </Select>
           </FormControl>
-        </Box>
+        </DateTimeRow>
         <FormControl fullWidth margin="normal">
           <InputLabel id="members-select-label">Members</InputLabel>
           <Select
@@ -386,26 +388,25 @@ const TeamTaskModal: React.FC<TeamTaskModalProps> = ({ open, handleClose, update
           helperText="Type a tag and press ';' to add"
         />
         {task.tags.length > 0 && (
-          <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <TagsBox>
             {task.tags.map((tag, index) => (
               <Chip key={index} label={tag} onDelete={() => handleDeleteTag(tag)} sx={{ m: 0.5 }} />
             ))}
-          </Box>
+          </TagsBox>
         )}
         {mode.mode !== 'view' && (
-          <Button
+          <ActionButton
             variant="contained"
             color="primary"
             fullWidth
             onClick={mode.mode === 'edit' ? handleUpdateClick : handleSaveClick}
             disabled={loading}
-            sx={{ mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Save'}
-          </Button>
+          </ActionButton>
         )}
-      </Box>
-    </Modal>
+      </ModalContent>
+    </StyledModal>
   );
 };
 

@@ -14,18 +14,18 @@ export const getAllProjects = async () => {
     }
 }
 
-export const getProjectById = async (id: string) => {
+export const getProjectById = async (teamId: string, id: string) => {
     try {
-        const response = await axios.get(`${BASE_URL}/project/${id}`);
-        return { project: response.data, error: null, status: response.status };
+        const response = await axios.get(`${BASE_URL}/teams/${teamId}/projects/${id}`);
+        return { project: response.data.project, error: null, status: response.status };
     } catch (error) {
         return { data: null, error: { error } };
     }
 }
 
-export const getProjectTasks = async (id: string) => {
+export const getProjectTasks = async (teamId: string, id: string) => {
     try {
-        const response = await axios.get(`${BASE_URL}/project-tasks/${id}`);
+        const response = await axios.get(`${BASE_URL}/teams/${teamId}/project-tasks/${id}`);
         return { tasks: response.data, error: null, status: response.status };
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 401) {

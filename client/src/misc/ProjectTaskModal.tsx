@@ -7,6 +7,7 @@ import { getCategories, getProjects, createTask, getTaskById, updateTask } from 
 import { useAuth } from '../contexts/AuthContext';
 import { CircularProgress } from '@mui/material';
 import { getAllTeamMembersByProject } from '../services/TeamServices';
+import { StyledModal, ModalContent, DateTimeRow, FormRow, ActionButton, TagsBox } from './ModalComponents';
 
 interface ProjectTaskModalProps {
   open: boolean;
@@ -66,6 +67,7 @@ const ProjectTaskModal: React.FC<ProjectTaskModalProps> = ({ open, handleClose, 
     due_date: false,
   });
   const [loading, setLoading] = useState(false);
+  const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
 
   useEffect(() => {
     if (open) {
@@ -235,21 +237,8 @@ const ProjectTaskModal: React.FC<ProjectTaskModalProps> = ({ open, handleClose, 
   };
 
   return (
-    <Modal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '5%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 700,
-          bgcolor: 'background.paper',
-          border: '2px solid #FFF',
-          boxShadow: 24,
-          p: 2,
-          borderRadius: 1,
-        }}
-      >
+    <StyledModal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
+      <ModalContent isMobile={isMobile}>
         <TextField
           error={errors.title}
           fullWidth
@@ -272,7 +261,8 @@ const ProjectTaskModal: React.FC<ProjectTaskModalProps> = ({ open, handleClose, 
           value={task.description}
           onChange={handleInputChange}
         />
-        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+        
+        <FormRow>
           <FormControl fullWidth margin="normal">
             <InputLabel id="status-select-label">Status</InputLabel>
             <Select
@@ -325,16 +315,17 @@ const ProjectTaskModal: React.FC<ProjectTaskModalProps> = ({ open, handleClose, 
               ))}
             </Select>
           </FormControl>
-        </Box>
-        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+        </FormRow>
+
+        <DateTimeRow>
           <DateTimePicker
-            sx={{ width: '100%' }}
+            sx={{ width: '100%', mb: 2 }}
             value={task.start_date}
             onChange={handleStartDateChange}
             label="Start Date"
           />
           <DateTimePicker
-            sx={{ width: '100%' }}
+            sx={{ width: '100%', mb: 2 }}
             value={task.due_date}
             onChange={handleDueDateChange}
             label="End Date"
@@ -356,7 +347,8 @@ const ProjectTaskModal: React.FC<ProjectTaskModalProps> = ({ open, handleClose, 
               ))}
             </Select>
           </FormControl>
-        </Box>
+        </DateTimeRow>
+
         <FormControl fullWidth margin="normal">
           <InputLabel id="members-select-label">Members</InputLabel>
           <Select
@@ -384,26 +376,25 @@ const ProjectTaskModal: React.FC<ProjectTaskModalProps> = ({ open, handleClose, 
           helperText="Type a tag and press ';' to add"
         />
         {task.tags.length > 0 && (
-          <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <TagsBox>
             {task.tags.map((tag, index) => (
               <Chip key={index} label={tag} onDelete={() => handleDeleteTag(tag)} sx={{ m: 0.5 }} />
             ))}
-          </Box>
+          </TagsBox>
         )}
         {mode.mode !== 'view' && (
-          <Button
+          <ActionButton
             variant="contained"
             color="primary"
             fullWidth
             onClick={mode.mode === 'edit' ? handleUpdateClick : handleSaveClick}
             disabled={loading}
-            sx={{ mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Save'}
-          </Button>
+          </ActionButton>
         )}
-      </Box>
-    </Modal>
+      </ModalContent>
+    </StyledModal>
   );
 };
 

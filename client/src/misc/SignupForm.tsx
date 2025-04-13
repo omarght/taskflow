@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 
 const SignupForm: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ const SignupForm: React.FC = () => {
     const [error, setError] = useState('');
     const { login, signup } = useAuth();
     const navigate = useNavigate();
+    const theme = useTheme();
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -39,8 +41,8 @@ const SignupForm: React.FC = () => {
                 bgcolor: 'background.paper' 
             }}
         >
-            <Typography variant="h5" textAlign="center" mb={3}>
-                Login
+            <Typography sx={{ color: theme.palette.primary.main }} variant="h5" textAlign="center" mb={3}>
+                Signup
             </Typography>
 
             {error && (

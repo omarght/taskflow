@@ -11,7 +11,10 @@ import ProjectTaskModal from './ProjectTaskModal';
 import MiscForm from './MiscForm';
 import { deleteTask } from '../services/TaskServices';
 import VisibilityIcon from '@mui/icons-material/Visibility'; // Import VisibilityIcon from Material UI
+import DeleteButton from './DeleteButton';
+import EditButton from './EditButton';
 
+const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
 interface Task {
     id: number;
     title: string;
@@ -20,42 +23,50 @@ interface Task {
 }
 
 interface ProjectTasksProps {
+    teamId: string | undefined;
     projectId: string;
 }
 
-const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId }) => {
+const ProjectTasks: React.FC<ProjectTasksProps> = ({ teamId, projectId }) => {
     const columns: GridColDef[] = [
-        { field: 'title', headerName: 'Title', width: 150 },
-        { field: 'description', headerName: 'Description', width: 250 },
+        { field: 'title', headerName: 'Title', flex: 1, minWidth: 150 },
+        { field: 'description', headerName: 'Description', flex: 1, minWidth: 200 },
         { 
             field: 'status',
             headerName: 'Status',
-            width: 150,
+            flex: 1,
+            minWidth: 100,
             renderCell: (params) => PriorityGridCell({ priority: params.row.status, outlined: true }),
         },
         {
             field: 'importance',
             headerName: 'Priority',
-            width: 100,
+            flex: 1,
+            minWidth: 100,
             renderCell: (params) => <PriorityGridCell priority={params.row.importance} />,
         },
-        { field: 'start_date', headerName: 'Start Date', width: 125 },
-        { field: 'due_date', headerName: 'Due Date', width: 125 },
-        { field: 'categoryTitle', headerName: 'Category', width: 100 },
-        { field: 'projectTitle', headerName: 'Project', width: 100 },
+        { field: 'start_date', headerName: 'Start Date', flex: 1, minWidth: isMobile? 100 : 150 },
+        { field: 'due_date', headerName: 'Due Date', flex: 1, minWidth: isMobile? 100 : 150 },
+        { field: 'categoryTitle', headerName: 'Category', flex: 1, minWidth: 120 },
+        { field: 'projectTitle', headerName: 'Project', flex: 1, minWidth: 120 },
         // { field: 'tags', headerName: 'Tags', width: 200 },
         {
             field: 'actions',
             headerName: 'Actions',
-            width: 200,
+            minWidth: isMobile? 100 : 160,
+            sortable: false,
+            filterable: false,
+            disableColumnMenu: true,
+            disableReorder: true,
+            disableExport: true,
             renderCell: (params) => (
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
-                    <Button onClick={() => { setMode({ mode: 'edit', id: params.row.id }); setOpen(true); }} variant="contained" color="success">
-                        <EditIcon  />
-                    </Button>
-                    <Button onClick={() => { setMiscOpen(true) }} variant="contained" color="error">
-                        <DeleteIcon />
-                    </Button>
+                    <EditButton
+                        isMobile={isMobile}
+                        onClick={() => { setMode({ mode: 'edit', id: params.row.id });
+                        setOpen(true); }}
+                    />
+                   <DeleteButton isMobile={isMobile} onClick={() => { setMiscOpen(true) }} />
                 </ Box>
             )
         }
@@ -87,7 +98,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId }) => {
         setLoading(true);
         setError(null);
         try {
-            const { tasks, error } = await getProjectTasks(id!);
+            const { tasks, error } = await getProjectTasks(teamId, id);
             console.log('tasks', tasks);
             if (error) {
                 setError('Failed to load tasks.');
@@ -132,9 +143,6 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({ projectId }) => {
 
     return (
         <Box sx={{ height: 400, width: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-                Project Tasks
-            </Typography>
             <Box sx={{ mb: 1, display: 'flex', gap: 1 }}>
                 <Button variant="outlined" color="primary" onClick={() => handleOpenSelectedTask('create')}>
                     New Task

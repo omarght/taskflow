@@ -1,42 +1,28 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import { useAuth } from '../contexts/AuthContext';
 
-interface LoginFormProps {
+interface PasswordResetProps {
     setPasswordReset: (value: boolean) => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ setPasswordReset }) => {
+const PasswordReset: React.FC<PasswordResetProps> = ({ setPasswordReset }) => {
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useAuth();
-    const navigate = useNavigate();
-    const theme = useTheme();
-
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        try {
-            const response = await login(email, password);
-            
-            if (response.status === 200) {
-                // Redirect to dashboard or home page
-                navigate('/');
-            } else {
-                setError(response.error?.message || 'Login failed. Please try again.');
-            }
-        } catch (err: any) {
-            setError(err.message || 'Login failed. Please try again.');
+    const { requestPasswordReset } = useAuth(); 
+    
+    const handleRequestLinkClick = async () => {
+        const { success, error } = await requestPasswordReset(email);
+        if (success) {
+            setPasswordReset(false);
+        } else {
+            setError(error || 'Failed to send reset link. Please try again.');
         }
     };
 
     return (
         <Box 
-            component="form" 
-            onSubmit={handleSubmit} 
             sx={{ 
                 maxWidth: 400, 
                 mx: 'auto', 
@@ -47,8 +33,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ setPasswordReset }) => {
                 bgcolor: 'background.paper' 
             }}
         >
-            <Typography sx={{ color: theme.palette.primary.main }} variant="h5" textAlign="center" mb={3}>
-                Login
+            <Typography variant="h5" textAlign="center" mb={3}>
+                Password Reset
             </Typography>
 
             {error && (
@@ -72,28 +58,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ setPasswordReset }) => {
                 required
             />
 
-            <TextField
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                fullWidth
-                margin="normal"
-                required
-            />
-
             <Button 
-                type="submit" 
                 variant="contained" 
                 color="primary" 
                 fullWidth 
                 sx={{ mt: 2 }}
+                onClick={handleRequestLinkClick}
             >
-                Login
+                Send Reset Link
             </Button>
 
             <Typography variant="body2" textAlign="center" mt={2}>
-                <Link to="#" onClick={() => setPasswordReset(true)}>Forgot password?</Link>
+                <Link to="#" onClick={() => setPasswordReset(false)}>Back To Login</Link>
             </Typography>
 
             <Typography variant="body2" textAlign="center" mt={2}>
@@ -103,4 +79,4 @@ const LoginForm: React.FC<LoginFormProps> = ({ setPasswordReset }) => {
     );
 };
 
-export default LoginForm;
+export default PasswordReset;

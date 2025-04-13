@@ -1,14 +1,13 @@
 import React from 'react';
 import SignupForm from '../misc/SignupForm';
+import { Box } from '@mui/material';
 
 const LoginPage: React.FC = () => {
 
     return (
-        <div className="login-page light-gray-bg">
-            <div className="login-form-container">
-                <SignupForm />
-            </div>
-        </div>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <SignupForm />
+        </Box>
     );
 };
 

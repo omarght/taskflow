@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import { getTeamById } from '../services/TeamServices';
-import MiscForm from '../misc/MiscForm';
 import TeamTasks from '../misc/TeamTasks';
 import TeamProjects from '../misc/TeamProjects';
 import TeamMembers from '../misc/TeamMembers';
+import Breadcrumbs from '../misc/Breadcrumbs';
 
 interface TeamPageProps {}
 
@@ -72,20 +71,6 @@ const TeamPage: React.FC<TeamPageProps> = () => {
         }
     };
 
-    // const handleAddProject = async (projectData: any) => {
-    //     const result = await addProject(id!, projectData);
-    //     if (result.success) {
-    //         fetchTeam(); // Refresh team data
-    //     }
-    // };
-
-    // const handleAddMember = async (memberData: any) => {
-    //     const result = await addMember(id!, memberData);
-    //     if (result.success) {
-    //         fetchTeam(); // Refresh team data
-    //     }
-    // };
-
     useEffect(() => {
         fetchTeam();
     }, [id]);
@@ -95,9 +80,8 @@ const TeamPage: React.FC<TeamPageProps> = () => {
 
     return (
         <Grid container spacing={2}>
-            <Grid size={12}>
-                <Typography variant="h4">{team.name}</Typography>
-                <Typography variant="subtitle1">Managed by: {team.manager?.name || 'No Manager'}</Typography>
+            <Grid size={12} sx={{ mt: 2, p: 3 }}>
+                <Breadcrumbs />
             </Grid>
 
             <Grid size={12}>

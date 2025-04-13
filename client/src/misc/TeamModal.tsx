@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import dayjs, { Dayjs } from 'dayjs';
-import { SelectChangeEvent } from '@mui/material';
-import { getCategories, getProjects, createTask, getTaskById, updateTask } from '../services/TaskServices';
+import { Modal, Box, TextField, Button } from '@mui/material';
+import dayjs from 'dayjs';
 import { useAuth } from '../contexts/AuthContext';
 import { CircularProgress } from '@mui/material';
 import { getTeamById, createTeam, updateTeam } from '../services/TeamServices';
-import { getAllProjects } from '../services/ProjectServices';
-import { Checkbox, ListItemText, OutlinedInput } from '@mui/material';
+import { StyledModal, ModalContent, ActionButton, FormRow } from './ModalComponents';
 
+const isMobile = window.innerWidth <= 768;
 interface TeamModalProps {
     open: boolean;
     handleClose: () => void;
@@ -146,47 +143,36 @@ const TeamModal: React.FC<TeamModalProps> = ({ open, handleClose, updateTeams, m
 
 
     return (
-        <Modal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: '5%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 700,
-                    bgcolor: 'background.paper',
-                    border: '2px solid #FFF',
-                    boxShadow: 24,
-                    p: 2,
-                    borderRadius: 1,
-                }}
-            >
-                <TextField
-                    error={errors.name}
-                    fullWidth
-                    label="Name"
-                    variant="outlined"
-                    margin="normal"
-                    name="name"
-                    value={team.name}
-                    onChange={handleInputChange}
-                />
+        <StyledModal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
+            <ModalContent isMobile={isMobile}>
+                <FormRow>
+                    <TextField
+                        error={errors.name}
+                        fullWidth
+                        label="Name"
+                        variant="outlined"
+                        margin="normal"
+                        name="name"
+                        value={team.name}
+                        onChange={handleInputChange}
+                    />
 
-                <TextField
-                    error={errors.manager}
-                    disabled
-                    fullWidth
-                    label="Manager"
-                    variant="outlined"
-                    margin="normal"
-                    name="manager_id"
-                    multiline
-                    value={team.manager.name}
-                    onChange={handleInputChange}
-                />
+                    <TextField
+                        error={errors.manager}
+                        disabled
+                        fullWidth
+                        label="Manager"
+                        variant="outlined"
+                        margin="normal"
+                        name="manager_id"
+                        multiline
+                        value={team.manager.name}
+                        onChange={handleInputChange}
+                    />
+                </FormRow>
 
                 { mode.mode != "view" &&
-                    <Button
+                    <ActionButton
                         variant="contained"
                         color="primary"
                         fullWidth
@@ -195,10 +181,10 @@ const TeamModal: React.FC<TeamModalProps> = ({ open, handleClose, updateTeams, m
                         sx={{ mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
-                    </Button>
+                    </ActionButton>
                 }
-            </Box>
-        </Modal>
+        </ModalContent>
+        </StyledModal>
     );
 };
 

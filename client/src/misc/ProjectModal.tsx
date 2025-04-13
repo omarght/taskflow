@@ -4,7 +4,9 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { createProject, getProjectById, updateProject } from '../services/ProjectServices';
 import { useAuth } from '../contexts/AuthContext';
+import { StyledModal, ModalContent, DateTimeRow, ActionButton } from './ModalComponents';
 
+const isMobile = window.innerWidth <= 768;
 interface ProjectModalProps {
     open: boolean;
     handleClose: () => void;
@@ -45,7 +47,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ open, handleClose, updatePr
     useEffect(() => {
         if (open) {
             if (mode.mode === 'edit' || mode.mode === 'view') {
-                getProjectById(`${mode.id}`).then((res) => {
+                getProjectById(`${teamId}`, `${mode.id}`).then((res) => {
                     setProject(res.project.project);
                 });
             } else {
@@ -128,22 +130,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ open, handleClose, updatePr
     };
 
     return (
-        <Modal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: '5%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 700,
-                    bgcolor: 'background.paper',
-                    border: '2px solid #FFF',
-                    boxShadow: 24,
-                    p: 2,
-                    borderRadius: 1,
-                }}
-            >
-                            <h1>Mode: {mode.mode}</h1>
+        <StyledModal open={open} onClose={handleClose} sx={{ overflow: 'scroll' }}>
+            <ModalContent isMobile={isMobile}>
                 <TextField
                     error={errors.title}
                     fullWidth
@@ -168,34 +156,35 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ open, handleClose, updatePr
                     onChange={handleInputChange}
                 />
 
-                <DateTimePicker
-                    label="Start Date"
-                    value={dayjs(project.start_date)}
-                    onChange={(value) => handleDateChange('start_date', value)}
-                    sx={{ mt: 2, width: '100%' }}
-                />
+                <DateTimeRow>
+                    <DateTimePicker
+                        label="Start Date"
+                        value={dayjs(project.start_date)}
+                        onChange={(value) => handleDateChange('start_date', value)}
+                        sx={{ mt: 2, width: '100%' }}
+                    />
 
-                <DateTimePicker
-                    label="End Date"
-                    value={dayjs(project.end_date)}
-                    onChange={(value) => handleDateChange('end_date', value)}
-                    sx={{ mt: 2, width: '100%' }}
-                />
+                    <DateTimePicker
+                        label="End Date"
+                        value={dayjs(project.end_date)}
+                        onChange={(value) => handleDateChange('end_date', value)}
+                        sx={{ mt: 2, width: '100%' }}
+                    />
+                </DateTimeRow>
 
                 {mode.mode !== "view" && (
-                    <Button
+                    <ActionButton
                         variant="contained"
                         color="primary"
                         fullWidth
                         onClick={mode.mode === 'edit' ? handleUpdateClick : handleSaveClick}
                         disabled={loading}
-                        sx={{ mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
-                    </Button>
+                    </ActionButton>
                 )}
-            </Box>
-        </Modal>
+            </ModalContent>
+        </StyledModal>
     );
 };
 

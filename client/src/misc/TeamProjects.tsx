@@ -17,6 +17,10 @@ import { Fullscreen } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import ProjectModal from './ProjectModal';
 import { deleteProject } from '../services/ProjectServices';
+import EditButton from './EditButton';
+import DeleteButton from './DeleteButton';
+
+const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
 interface Project {
   id: string;
   title: string;
@@ -32,40 +36,19 @@ interface TeamProjectsProps {
 
 const TeamProjects: React.FC<TeamProjectsProps> = ({ teamId }) => {
     const columns: GridColDef[] = [
-        { field: 'title', headerName: 'Title', width: 150, renderCell: (params) => <Link to={`/project/${params.row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>{params.row.title}</Link> },
+        { field: 'title', headerName: 'Title', width: 150, renderCell: (params) => <Link to={`/teams/${teamId}/projects/${params.row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>{params.row.title}</Link> },
         { field: 'description', headerName: 'Description', width: 250 },
         { field: 'task_count', headerName: 'Tasks', width: 150 },
         { field: 'completed_task_count', headerName: 'Completed Tasks', width: 150 },
         { field: 'open_tasks', headerName: 'Open Tasks', width: 150 },
-        // { 
-        //     field: 'status',
-        //     headerName: 'Status',
-        //     width: 150,
-        //     renderCell: (params) => (
-        //         <Chip
-        //             label={params.row.status}
-        //             color={
-        //                 params.row.status === 'Completed' ? 'success' :
-        //                 params.row.status === 'In Progress' ? 'warning' :
-        //                 'error'
-        //             }
-        //         />
-        //     ),
-        // },
-        // { field: 'start_date', headerName: 'Start Date', width: 125 },
-        // { field: 'due_date', headerName: 'Due Date', width: 125 },
         {
             field: 'actions',
             headerName: 'Actions',
             width: 200,
             renderCell: (params) => (
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
-                    <Button onClick={() => handleEditProject(params.row.id)} variant="contained" color="success">
-                        <EditIcon />
-                    </Button>
-                    <Button onClick={() => { setSelectedProjectId(params.row.id); setMiscOpen(true); }} variant="contained" color="error">
-                        <DeleteIcon />
-                    </Button>
+                    <EditButton onClick={() => { setMode({ mode: 'edit', id: params.row.id }); setIsModalOpen(true); }} isMobile={isMobile} />
+                    <DeleteButton onClick={() => { setSelectedProjectId(params.row.id); setMiscOpen(true); }} isMobile={isMobile} />
                 </Box>
             )
         }
