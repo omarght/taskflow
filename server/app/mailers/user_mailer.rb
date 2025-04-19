@@ -7,8 +7,8 @@ class UserMailer < ApplicationMailer
         to: [{ email: @user.email }],
         dynamic_template_data: { name: @user.name, email: @user.email } # Matches {{name}} in SendGrid template
       }],
-      from: { email: 'devom393@gmail.com' },
-      template_id: 'd-58e96bae274e4d73971cb8ea4823387d' # Replace this with your actual template ID
+      from: { email: ENV['SENDER_EMAIL'] },
+      template_id: ENV['WELCOME_EMAIL_TEMPLATE_ID'] # Replace this with your actual template ID
     }
 
     response = sg.client.mail._('send').post(request_body: data.to_json)
@@ -24,8 +24,8 @@ class UserMailer < ApplicationMailer
         to: [{ email: @user.email}],
         dynamic_template_data: { name: @user.name, team_name: @team.name } # Matches {{name}} in SendGrid template
       }],
-      from: { email: 'devom393@gmail.com' },
-      template_id: 'd-58e96bae274e4d73971cb8ea4823387d' # Replace this with your actual template ID
+      from: { email: ENV['SENDER_EMAIL'] },
+      template_id: ENV['WELCOME_EMAIL_TEMPLATE_ID'] # Replace this with your actual template ID
     }
 
     response = sg.client.mail._('send').post(request_body: data.to_json)
@@ -41,8 +41,8 @@ class UserMailer < ApplicationMailer
         to: [{ email: @user.email }],
         dynamic_template_data: { name: @user.name, team_name: @team.name } # Matches {{name}} in SendGrid template
       }],
-      from: { email: 'devom393@gmail.com' },
-      template_id: 'd-fdc7f3286afc414b855a882f4e7888f5' # Replace this with your actual template ID
+      from: { email: ENV['SENDER_EMAIL'] },
+      template_id: ENV['ADDED_TO_TEAM_EMAIL_TEMPLATE_ID'] # Replace this with your actual template ID
     }
 
     response = sg.client.mail._('send').post(request_body: data.to_json)
@@ -58,8 +58,8 @@ class UserMailer < ApplicationMailer
         to: [{ email: @user.email }],
         dynamic_template_data: { name: @user.name, reset_url: @reset_url } # Matches {{name}} in SendGrid template
       }],
-      from: { email: 'devom393@gmail.com' },
-      template_id: 'd-c650bb2cae4643cf91b5006a459b1b28' # Replace this with your actual template ID
+      from: { email: ENV['SENDER_EMAIL'] },
+      template_id: ENV['PASSWORD_RESET_EMAIL_TEMPLATE_ID'] # Replace this with your actual template ID
     }
 
     response = sg.client.mail._('send').post(request_body: data.to_json)
