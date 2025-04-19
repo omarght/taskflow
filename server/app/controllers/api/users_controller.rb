@@ -7,6 +7,9 @@ class Api::UsersController < ApplicationController
 
     def get_user
         user = User.find_by(id: params[:id])
+        user = user.as_json(except: [:password_digest, :reset_password_sent_at, :reset_password_token])
+        puts 'user'
+        puts user
         if user
             render json: { 
                 user: user,
@@ -23,9 +26,10 @@ class Api::UsersController < ApplicationController
 
     def get_current_user
         user = @current_user
+        updatedUser = user.as_json(except: [:password_digest, :reset_password_sent_at, :reset_password_token])
         if user
             render json: { 
-                user: user,
+                user: updatedUser,
                 teams: user.teams.as_json(only: [:id, :name]),
                 task_count: user.tasks.count,
                 open_tasks: user.tasks.where.not(status: 'completed').count,
