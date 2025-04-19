@@ -72,9 +72,6 @@ rails server
   /client       # React + Vite frontend  
   /server       # Ruby on Rails API  
   
-**2. Contact formatting:**
-
-Give it a proper heading for consistency:
 
 ```markdown
 ### 📬 Contact
