@@ -63,7 +63,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ showMobileMenu, showMobil
         <SidebarHeaderContainer>
             <Logo src="/assets/logo-lg.jpeg" alt="Logo" />
             <SidebarTitle variant="h5" className="sidebar-title">
-                Task Manager
+                TaskFlow
             </SidebarTitle>
             <MenuButton onClick={showMobileMenu} className="menu-btn">
                 <div className={`bar ${showMobile ? 'bar1-active' : ''}`}></div>
