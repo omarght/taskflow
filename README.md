@@ -79,4 +79,3 @@ rails server
 Built by [Omar Taha](https://www.linkedin.com/in/omar-taha-1374a4112/).
 
 Feel free to reach out or open an issue if you have feedback or questions.
-```
