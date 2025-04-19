@@ -18,7 +18,11 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<LoginResponse>;
   signup: (name: string, email: string, password: string) => Promise<any>;
   requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>;
-  resetPassword: (password: string, passwordConfirmation: string, token: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (
+    password: string,
+    passwordConfirmation: string,
+    token: string
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -32,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuth = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/check", { withCredentials: true });
+      const response = await axios.get(`${BASE_URL}/check`, { withCredentials: true });
       setIsAuthenticated(response.status === 200);
       if(response.status === 200) {
         setLoggedInUser(response.data.user);
@@ -45,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await axios.post("http://localhost:3000/api/login", { email, password }, { withCredentials: true });
+      const response = await axios.post(`${BASE_URL}/login`, { email, password }, { withCredentials: true });
       if (response.status === 200) {
         setIsAuthenticated(true);
         setLoggedInUser(response.data.user);
@@ -72,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/api/logout", { withCredentials: true });
+      const response = await axios.post(`${BASE_URL}/logout`, { withCredentials: true });
       if (response.status === 200) {
         setIsAuthenticated(false);
         setLoggedInUser(null);
@@ -84,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/create-user", { user: { name, email, password } }, { withCredentials: true });
+      const response = await axios.post(`${BASE_URL}/create-user`, { user: { name, email, password } }, { withCredentials: true });
       if (response.status === 201) {
         setIsAuthenticated(true);
         setLoggedInUser(response.data.user);

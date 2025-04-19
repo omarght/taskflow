@@ -1,4 +1,4 @@
-import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 
 // Extend the default theme
 declare module '@mui/material/styles' {
@@ -75,7 +75,7 @@ const theme = createTheme({
         editButtonsText: colors.editButtonsText,
     },
     typography: {
-      fontFamily: `'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'`,
+      fontFamily: 'Segoe UI, Helvetica Neue, Arial, sans-serif',
       h1: { fontSize: '2rem', fontWeight: 700 },
       h2: { fontSize: '1.5rem', fontWeight: 600 },
       body1: { fontSize: '1rem' },
